@@ -1,30 +1,52 @@
-name: Build and Push Base Image
+name: Build and Push Multi-Arch Base Image
 
 on:
-  workflow_dispatch: # 手动触发
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push multi-arch base image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile
-        push: true
-        tags: marsss816/jdk21-ffmpeg:latest
-        platforms: linux/amd64,linux/arm64
+      # 构建 amd64
+      - name: Build amd64 image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: marsss816/jdk21-ffmpeg:amd64
+          build-args: |
+            FFMPEG_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-amd64-static.tar.xz
+          platforms: linux/amd64
+
+      # 构建 arm64
+      - name: Build arm64 image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: marsss816/jdk21-ffmpeg:arm64
+          build-args: |
+            FFMPEG_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-arm64-static.tar.xz
+          platforms: linux/arm64
+
+      # 合并 manifest
+      - name: Create and push manifest
+        run: |
+          docker manifest create marsss816/jdk21-ffmpeg:latest \
+            marsss816/jdk21-ffmpeg:amd64 \
+            marsss816/jdk21-ffmpeg:arm64
+          docker manifest push marsss816/jdk21-ffmpeg:latest
