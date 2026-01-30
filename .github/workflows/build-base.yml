@@ -26,5 +26,5 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: yourdockerhubuser/jdk21-ffmpeg:latest
+        tags: marsss816/jdk21-ffmpeg:latest
         platforms: linux/amd64,linux/arm64
