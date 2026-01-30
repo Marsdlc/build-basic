@@ -27,3 +27,6 @@ jobs:
           push: true
           tags: marsss816/jdk21-ffmpeg:latest
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            FFMPEG_URL=linux/amd64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-amd64-static.tar.xz
+            FFMPEG_URL=linux/arm64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-arm64-static.tar.xz

@@ -1,16 +1,11 @@
 FROM eclipse-temurin:21-jre-jammy
 
-# 安装必要工具并下载对应架构的静态 ffmpeg (支持 amd64/arm64)
+# 构建参数：不同架构的 FFmpeg URL
+ARG FFMPEG_URL
+
+# 安装必要工具并下载静态 FFmpeg
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl xz-utils && \
-    ARCH=$(dpkg --print-architecture) && \
-    if [ "$ARCH" = "amd64" ]; then \
-        FFMPEG_URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz"; \
-    elif [ "$ARCH" = "arm64" ]; then \
-        FFMPEG_URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz"; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
     mkdir -p /tmp/ffmpeg && \
     curl -L "$FFMPEG_URL" -o /tmp/ffmpeg.tar.xz && \
     tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1 && \
@@ -27,5 +22,3 @@ WORKDIR /app
 
 # 创建通用目录
 RUN mkdir -p /app/tmp /app/logs && chmod 777 /app/tmp /app/logs
-
-# 基础镜像不需要 jar，所以没有 ENTRYPOINT
