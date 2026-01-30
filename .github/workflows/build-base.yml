@@ -1,7 +1,7 @@
 name: Build and Push Multi-Arch Base Image
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 手动触发
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 构建 amd64
+      # 构建 amd64 镜像
       - name: Build amd64 image
         uses: docker/build-push-action@v5
         with:
@@ -31,7 +31,7 @@ jobs:
             FFMPEG_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-amd64-static.tar.xz
           platforms: linux/amd64
 
-      # 构建 arm64
+      # 构建 arm64 镜像
       - name: Build arm64 image
         uses: docker/build-push-action@v5
         with:
@@ -43,7 +43,7 @@ jobs:
             FFMPEG_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-arm64-static.tar.xz
           platforms: linux/arm64
 
-      # 合并 manifest
+      # 合并 manifest，创建 latest tag
       - name: Create and push manifest
         run: |
           docker manifest create marsss816/jdk21-ffmpeg:latest \
