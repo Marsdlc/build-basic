@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Docker Buildx
@@ -27,8 +27,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: marsss816/jdk21-ffmpeg:amd64
-          build-args: |
-            FFMPEG_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-amd64-static.tar.xz
           platforms: linux/amd64
 
       # 构建 arm64 镜像
@@ -39,12 +37,10 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: marsss816/jdk21-ffmpeg:arm64
-          build-args: |
-            FFMPEG_URL=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-arm64-static.tar.xz
           platforms: linux/arm64
 
       # 合并 manifest，创建 latest tag
-      - name: Create and push manifest
+      - name: Create and push manifest for latest
         run: |
           docker manifest create marsss816/jdk21-ffmpeg:latest \
             marsss816/jdk21-ffmpeg:amd64 \
