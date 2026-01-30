@@ -25,12 +25,7 @@ RUN apt-get update && \
 # 工作目录
 WORKDIR /app
 
-# 创建目录
-RUN mkdir -p /app/tmp && chmod 777 /app/tmp \
- && mkdir -p /app/logs && chmod 777 /app/logs
+# 创建通用目录
+RUN mkdir -p /app/tmp /app/logs && chmod 777 /app/tmp /app/logs
 
-# 复制 jar
-COPY target/mars-printer-hub-*.jar /app/app.jar
-
-# 启动
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# 基础镜像不需要 jar，所以没有 ENTRYPOINT
