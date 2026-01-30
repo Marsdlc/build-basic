@@ -3,11 +3,15 @@ FROM eclipse-temurin:21-jre-jammy
 # 构建参数：不同架构的 FFmpeg URL
 ARG FFMPEG_URL
 
-# 安装必要工具并下载静态 FFmpeg
+# 安装必要工具并下载静态 FFmpeg（带重试机制）
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl xz-utils && \
     mkdir -p /tmp/ffmpeg && \
-    curl -L "$FFMPEG_URL" -o /tmp/ffmpeg.tar.xz && \
+    echo "Downloading FFmpeg from $FFMPEG_URL" && \
+    for i in 1 2 3; do \
+        curl -fSL "$FFMPEG_URL" -o /tmp/ffmpeg.tar.xz && break || echo "Retry $i..."; \
+        sleep 5; \
+    done && \
     tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1 && \
     mv /tmp/ffmpeg/ffmpeg /usr/local/bin/ && \
     mv /tmp/ffmpeg/ffprobe /usr/local/bin/ && \
