@@ -1,13 +1,16 @@
 FROM eclipse-temurin:21-jre-jammy
 
-# 构建参数：每个架构传不同 FFmpeg URL
-ARG FFMPEG_URL
+# 1. 声明 TARGETARCH，Docker Buildx 会自动注入当前构建的架构 (如 amd64 或 arm64)
+ARG TARGETARCH
+# 定义 FFmpeg 版本
+ARG FFMPEG_VERSION=6.0
 
-# 安装必要工具并下载 FFmpeg
+# 2. 动态构建 URL 并下载
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl xz-utils && \
     mkdir -p /tmp/ffmpeg && \
-    echo "Downloading FFmpeg from $FFMPEG_URL" && \
+    FFMPEG_URL="https://johnvansickle.com/ffmpeg/releases/ffmpeg-${FFMPEG_VERSION}-${TARGETARCH}-static.tar.xz" && \
+    echo "Downloading FFmpeg (${TARGETARCH}) from $FFMPEG_URL" && \
     curl -fSL "$FFMPEG_URL" -o /tmp/ffmpeg.tar.xz && \
     tar -xf /tmp/ffmpeg.tar.xz -C /tmp/ffmpeg --strip-components=1 && \
     mv /tmp/ffmpeg/ffmpeg /usr/local/bin/ && \
