@@ -1,32 +1,53 @@
 name: Build and Push Multi-Arch Base Image
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # 手动触发
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # 1. 拉取代码
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2. 设置 Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # 3. 登录 Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push multi-arch image
+      # 4. 构建 amd64 镜像
+      - name: Build amd64 image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: marsss816/jdk21-ffmpeg:latest
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            FFMPEG_URL_AMD64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-amd64-static.tar.xz
-            FFMPEG_URL_ARM64=https://johnvansickle.com/ffmpeg/releases/ffmpeg-6.0-arm64-static.tar.xz
+          tags: marsss816/jdk21-ffmpeg:amd64
+          platforms: linux/amd64
+
+      # 5. 构建 arm64 镜像
+      - name: Build arm64 image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: marsss816/jdk21-ffmpeg:arm64
+          platforms: linux/arm64
+
+      # 6. 合并 multi-arch manifest
+      - name: Create and push latest manifest
+        run: |
+          # 删除已存在 latest manifest，避免报错
+          docker manifest rm marsss816/jdk21-ffmpeg:latest || true
+          docker manifest create marsss816/jdk21-ffmpeg:latest \
+            marsss816/jdk21-ffmpeg:amd64 \
+            marsss816/jdk21-ffmpeg:arm64
+          docker manifest push marsss816/jdk21-ffmpeg:latest
